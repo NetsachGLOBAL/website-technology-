@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology Detector</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Website Technology Detector</h1>
+        <p>Enter a URL to detect the technologies used by the website:</p>
+        <form id="techForm">
+            <input type="text" id="urlInput" placeholder="Enter URL (e.g. https://example.com)" required>
+            <button type="submit">Detect Technologies</button>
+        </form>
+        <div id="loader" class="loader" style="display: none;"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('techForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
+            
+            resultDiv.innerHTML = '';
+            loader.style.display = 'block';
+
+            const response = await fetch('/detect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+
+            const data = await response.json();
+            loader.style.display = 'none';
+
+            if (data.error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+            } else {
+                let technologiesList = `<ul>`;
+                for (const [category, techs] of Object.entries(data.technologies)) {
+                    technologiesList += `<li><strong>${category}:</strong> ${techs.join(', ')}</li>`;
+                }
+                technologiesList += `</ul>`;
+                resultDiv.innerHTML = `<h3>Technologies Detected:</h3>${technologiesList}`;
+            }
+        });
+    </script>
+</body>
+</html>
